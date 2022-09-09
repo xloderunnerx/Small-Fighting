@@ -36,6 +36,7 @@ namespace Unit
         {
             this.target = target;
             self.target = target;
+            StateMachine.ChangeState(new ApproachmentState(self, target));
         }
     }
 }
