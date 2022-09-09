@@ -5,20 +5,18 @@ using Zenject;
 
 namespace Unit
 {
-    public class UnitSpawner : MonoBehaviour 
+    public class UnitSpawner : MonoBehaviour
     {
         [SerializeField] private BaseUnit unitPrefab;
         [SerializeField] private float radius;
         [SerializeField] private float spawnDelay;
         private int namesCounter;
         private IUnitFactory unitFactory;
-        private UnitMatchmaker unitMatchmaker;
 
         [Inject]
-        public void Construct(IUnitFactory unitFactory, UnitMatchmaker unitMatchmaker)
+        public void Construct(IUnitFactory unitFactory)
         {
             this.unitFactory = unitFactory;
-            this.unitMatchmaker = unitMatchmaker;
         }
 
         private void Start()
@@ -37,13 +35,9 @@ namespace Unit
                 baseUnit.gameObject.name = namesCounter.ToString();
                 baseUnit.transform.position = transform.position + Random.insideUnitSphere * radius;
                 namesCounter++;
-                UnitMatchmaker.AddSearchingUnit(baseUnit);
             }
         }
 
-        private void OnDrawGizmos()
-        {
-            Gizmos.DrawWireSphere(transform.position, radius);
-        }
+        private void OnDrawGizmos() => Gizmos.DrawWireSphere(transform.position, radius);
     }
 }

@@ -5,59 +5,49 @@ using System.Collections.Generic;
 using System.Linq;
 using Unit;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Unit
 {
-    public class UnitMatchmaker : MonoBehaviour // Static isn't good technicuqe and should be replaced with DI container, i understand that.
+    public class UnitMatchmaker : IMatchmakingService
     {
-        [SerializeField] private static List<BaseUnit> searchingUnits;
-        [SerializeField] private static List<BaseUnit> busyUnits;
-        public static event Action<BaseUnit> OnSearchingUnitAdded;
+        private Dictionary<BaseUnit, Action<BaseUnit>> matchmakingUnits;
 
-        private void Awake()
+        public UnitMatchmaker()
         {
-            searchingUnits = new List<BaseUnit>();
-            busyUnits = new List<BaseUnit>();
+            this.matchmakingUnits = new Dictionary<BaseUnit, Action<BaseUnit>>();
         }
 
-        public static BaseUnit GetClosestUnit(BaseUnit unit)
+        public void Matchmake(BaseUnit reuquester, Action<BaseUnit> onMatchmake)
         {
-            var validatedList = searchingUnits
-                .Where(bu => bu != unit)
-                .ToList();
-            if (validatedList.Count == 0)
-                return null;
-            var minDistance = validatedList
-                .Select(bu => Vector3.Distance(bu.transform.position, unit.transform.position))
+            matchmakingUnits.Add(reuquester, onMatchmake);
+            TryMatchmakeWithClosest(reuquester);
+        }
+
+        private void TryMatchmakeWithClosest(BaseUnit requester)
+        {
+            var validatedDictionary = matchmakingUnits.Where(mu => mu.Key != requester)
+                .ToDictionary(k => k.Key, v => v.Value);
+            if (validatedDictionary.Count == 0)
+                return;
+            var minDistance = validatedDictionary.Select(vmu => Vector3.Distance(vmu.Key.transform.position, requester.transform.position))
                 .Min();
-            var closestUnit = validatedList.Where(bu => Vector3.Distance(bu.transform.position, unit.transform.position) == minDistance).FirstOrDefault();
-            return closestUnit;
+            var closestUnit = validatedDictionary.Where(vmu => Vector3.Distance(vmu.Key.transform.position, requester.transform.position) == minDistance)
+                .FirstOrDefault();
+            var requesterKeyPair = matchmakingUnits.Where(mu => mu.Key == requester)
+                .FirstOrDefault();
+            closestUnit.Value?.Invoke(requester);
+            requesterKeyPair.Value?.Invoke(closestUnit.Key);
+            matchmakingUnits.Remove(closestUnit.Key);
+            matchmakingUnits.Remove(requester);
+            DebugColors(closestUnit.Key, requester);
         }
 
-        public static void AddSearchingUnit(BaseUnit unit)
+        private void DebugColors(BaseUnit a, BaseUnit b)
         {
-            searchingUnits.Add(unit);
-            OnSearchingUnitAdded?.Invoke(unit);
-        }
-
-        public static void SetUnitBusy(BaseUnit unit)
-        {
-            searchingUnits.Remove(unit);
-            busyUnits.Add(unit);
-        }
-
-        public static void SetUnitSearching(BaseUnit unit)
-        {
-            busyUnits.Remove(unit);
-            searchingUnits.Add(unit);
-            OnSearchingUnitAdded?.Invoke(unit);
-        }
-
-        public static bool IsUnitBusy(BaseUnit unit)
-        {
-            if (busyUnits.Contains(unit))
-                return true;
-            return false;
-        }
+            var rndColor = new Color(Random.Range(0, 1f), Random.Range(0, 1f), Random.Range(0, 1f));
+            a.GetComponent<MeshRenderer>().material.color = rndColor;
+            b.GetComponent<MeshRenderer>().material.color = rndColor;
+        }        
     }
 }

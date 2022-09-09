@@ -7,10 +7,11 @@ namespace Unit
 {
     public class UnitMatchmakerInstaller : MonoInstaller
     {
-        [SerializeField] private UnitMatchmaker baseUnitMatchmaker;
         public override void InstallBindings()
         {
-            Container.Bind<UnitMatchmaker>().FromInstance(baseUnitMatchmaker).AsSingle();
+            Container.Bind<IMatchmakingService>()
+                .To<UnitMatchmaker>()
+                .AsSingle();
         }
     }
 }

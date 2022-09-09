@@ -18,12 +18,12 @@ namespace Unit
         private BaseStateMachine stateMachine;
         private IDamagable health;
         private IUseable weapon;
-        private UnitMatchmaker baseUnitMatchmaker;
+        private IMatchmakingService baseUnitMatchmaker;
 
         public BaseUnit target; // Debug purposes
 
         [Inject]
-        public void Cinstruct(UnitMatchmaker baseUnitMatchmaker)
+        public void Cinstruct(IMatchmakingService baseUnitMatchmaker)
         {
             this.baseUnitMatchmaker = baseUnitMatchmaker;
         }
@@ -43,7 +43,7 @@ namespace Unit
         private void InitStateMachine()
         {
             stateMachine = new BaseStateMachine();
-            stateMachine.InitNewState(new SearchingState(this));
+            stateMachine.InitNewState(new SearchingState(this, baseUnitMatchmaker));
         }
 
         private void InitHealth() // Wraping Health Decorator.
@@ -59,12 +59,12 @@ namespace Unit
             weapon = GetComponentInChildren<IUseable>(); // I'd rather use DI container for weapon injection, but don't really want to install whole Zenject just for that.
         }
 
-        public void TakeDamage(int damage) => health.TakeDamage(damage);
-
         private void Die()
         {
             Debug.Log("Health Depleted");
         }
+
+        public void TakeDamage(int damage) => OnTakeDamage?.Invoke(damage);
 
         public void Target(BaseUnit unit) => OnTargetedBy?.Invoke(unit);
     }
