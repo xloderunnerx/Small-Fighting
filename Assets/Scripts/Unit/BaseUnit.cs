@@ -4,21 +4,30 @@ using System.Collections;
 using System.Collections.Generic;
 using Unit;
 using UnityEngine;
+using Zenject;
 
 namespace Unit
 {
     public class BaseUnit : MonoBehaviour, IDamagable
     {
+        [SerializeField] private Variable<int> healthVariable;
+
         public event Action<int> OnTakeDamage;
         public event Action<BaseUnit> OnTargetedBy;
-
-        [SerializeField] private Variable<int> healthVariable;
 
         private BaseStateMachine stateMachine;
         private IDamagable health;
         private IUseable weapon;
+        private UnitMatchmaker baseUnitMatchmaker;
 
-        public BaseUnit target;
+        public BaseUnit target; // Debug purposes
+
+        [Inject]
+        public void Cinstruct(UnitMatchmaker baseUnitMatchmaker)
+        {
+            this.baseUnitMatchmaker = baseUnitMatchmaker;
+        }
+
         private void Awake()
         {
             InitWeapon();
@@ -40,7 +49,7 @@ namespace Unit
         private void InitHealth() // Wraping Health Decorator.
         {
             var health = new Health(healthVariable.Value);
-            this.health = new BaseUnitHealth(health);
+            this.health = new UnitHealth(health);
             //unitHealth = new Health(healthVariable.Value); // Without Decoration.
             health.OnDie += Die;
         }
