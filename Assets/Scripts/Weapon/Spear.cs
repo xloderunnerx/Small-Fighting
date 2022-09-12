@@ -18,15 +18,28 @@ namespace Weapon
             StateMachine.Update();
         }
 
+        private void OnDestroy()
+        {
+            StateMachine.Destroy();
+        }
+
         public void Use()
         {
-            
+            StateMachine.ChangeState(new SpearHitState(this, damageVariable));
         }
 
         public override void InitStateMachine()
         {
             StateMachine = new BaseStateMachine();
             StateMachine.InitNewState(new SpearIdleState(gameObject, handlingSpeedVariable.Value));
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            var damaganble = other.GetComponent<IDamagable>();
+            if (damaganble == null)
+                return;
+            damaganble.TakeDamage(damageVariable.Value);
         }
     }
 }

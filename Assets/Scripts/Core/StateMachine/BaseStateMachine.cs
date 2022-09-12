@@ -28,5 +28,10 @@ namespace Core
                 return;
             CurrentState.Update();
         }
+
+        public void Destroy()
+        {
+            CurrentState.Destroy();
+        }
     }
 }

@@ -5,8 +5,14 @@ using UnityEngine;
 
 namespace Unit
 {
-    public class IdleState : BaseState
+    public class DeathState : BaseState
     {
+        private BaseUnit self;
+        public DeathState(BaseUnit self)
+        {
+            this.self = self;
+        }
+
         public override void Destroy()
         {
             
@@ -14,7 +20,7 @@ namespace Unit
 
         public override void Enter()
         {
-            Debug.Log("Idle State entered.");
+            GameObject.Destroy(self.gameObject);
         }
 
         public override void Exit()

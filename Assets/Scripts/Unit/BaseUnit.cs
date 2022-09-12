@@ -13,14 +13,11 @@ namespace Unit
         [SerializeField] private Variable<int> healthVariable;
 
         public event Action<int> OnTakeDamage;
-        public event Action<BaseUnit> OnTargetedBy;
 
         private BaseStateMachine stateMachine;
         private IDamagable health;
         private IUseable weapon;
         private IMatchmakingService baseUnitMatchmaker;
-
-        public BaseUnit target; // Debug purposes
 
         [Inject]
         public void Cinstruct(IMatchmakingService baseUnitMatchmaker)
@@ -40,10 +37,17 @@ namespace Unit
             stateMachine.Update();
         }
 
+        private void OnDestroy()
+        {
+            stateMachine.Destroy();
+        }
+
+        public void TakeDamage(int damage) => OnTakeDamage?.Invoke(damage);
+
         private void InitStateMachine()
         {
             stateMachine = new BaseStateMachine();
-            stateMachine.InitNewState(new SearchingState(this, baseUnitMatchmaker));
+            stateMachine.InitNewState(new SearchingState(this, baseUnitMatchmaker, SetTarget));
         }
 
         private void InitHealth() // Wraping Health Decorator.
@@ -59,13 +63,12 @@ namespace Unit
             weapon = GetComponentInChildren<IUseable>(); // I'd rather use DI container for weapon injection, but don't really want to install whole Zenject just for that.
         }
 
-        private void Die()
-        {
-            Debug.Log("Health Depleted");
-        }
+        private void SearchForTarget() => stateMachine.ChangeState(new SearchingState(this, baseUnitMatchmaker, SetTarget));
 
-        public void TakeDamage(int damage) => OnTakeDamage?.Invoke(damage);
+        private void Die() => stateMachine.ChangeState(new DeathState(this));
 
-        public void Target(BaseUnit unit) => OnTargetedBy?.Invoke(unit);
+        private void SetTarget(BaseUnit target) => stateMachine.ChangeState(new ApproachmentState(this, target, SetFight, SearchForTarget));
+
+        private void SetFight(BaseUnit target) => stateMachine.ChangeState(new FightingState(this, target, weapon, health, SetTarget, SearchForTarget));
     }
 }

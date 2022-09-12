@@ -14,6 +14,11 @@ public class SpearIdleState : BaseState
         this.handlingSpeed = handlingSpeed;
     }
 
+    public override void Destroy()
+    {
+        
+    }
+
     public override void Enter()
     {
         
@@ -26,6 +31,5 @@ public class SpearIdleState : BaseState
 
     public override void Update()
     {
-        weapon.transform.rotation = Quaternion.Slerp(weapon.transform.rotation, Quaternion.LookRotation(Vector3.up), handlingSpeed);
     }
 }

@@ -1,4 +1,5 @@
 using Core;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,11 +11,13 @@ namespace Unit
         private BaseUnit self;
         private BaseUnit target;
         private IMatchmakingService matchmakingService;
+        private Action<BaseUnit> onTargetFound;
 
-        public SearchingState(BaseUnit unit, IMatchmakingService matchmakingService)
+        public SearchingState(BaseUnit unit, IMatchmakingService matchmakingService, Action<BaseUnit> onTargetFound)
         {
             this.self = unit;
             this.matchmakingService = matchmakingService;
+            this.onTargetFound = onTargetFound;
         }
 
         public override void Enter()
@@ -35,8 +38,12 @@ namespace Unit
         public void MatchmakeWith(BaseUnit target)
         {
             this.target = target;
-            self.target = target;
-            StateMachine.ChangeState(new ApproachmentState(self, target));
+            onTargetFound?.Invoke(target);
+        }
+
+        public override void Destroy()
+        {
+            
         }
     }
 }
