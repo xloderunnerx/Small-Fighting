@@ -60,7 +60,7 @@ namespace Unit
 
         private void InitWeapon()
         {
-            weapon = GetComponentInChildren<IUseable>(); // I'd rather use DI container for weapon injection, but don't really want to install whole Zenject just for that.
+            weapon = GetComponentInChildren<IUseable>(); // Service Locator should be replaced with DI Game Object Context.
         }
 
         private void SearchForTarget() => stateMachine.ChangeState(new SearchingState(this, baseUnitMatchmaker, SetTarget));

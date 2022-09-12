@@ -8,7 +8,7 @@ namespace Unit
 {
     public class FightingState : BaseState
     {
-        private const float rotationSpeed = 0.3f;
+        private const float rotationSpeed = 0.3f; // These consts can be passed through Scriptable object confing in the Constructor.
         private const float minimumTargetDistance = 4.5f;
         private const float minHitDelay = 1f;
         private const float maxHitDelay = 2f;
